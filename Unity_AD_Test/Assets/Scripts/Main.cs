@@ -2,30 +2,52 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Advertisements;
+using UnityEngine.UI;
 
 public class Main : MonoBehaviour {
 
+    public Button showADButton;
+    public Text coinsUI;
+
+    private int coins = 0;
+
+#if UNITY_IOS
+    public string gameID = "1681331";
+#elif UNITY_ANDROID
+    public string gameID = "1681330";
+#endif
+
+    public string placementID = "rewardedVideo";
+
 	// Use this for initialization
 	void Start () {
-        Advertisement.Initialize("1681330");
-        Advertisement.Show();
-	}
+        if (Advertisement.isSupported) {
+            Advertisement.Initialize(gameID, true);
+        }
+
+        coinsUI.text = "Coins: 0";
+    }
 	
 	// Update is called once per frame
 	void Update () {
-		
-	}
-
-
-    private void ShowRewardedVideo() {
-        ShowOptions options = new ShowOptions();
-        options.resultCallback = HandleShowResult;
-        Advertisement.Show("rewardedVideo", options);
+        showADButton.interactable = Advertisement.IsReady(placementID);
     }
 
-    void HandleShowResult(ShowResult result) {
+    public void ShowAD() {
+        ShowRewardedAD();
+    }
+
+    private void ShowRewardedAD() {
+        ShowOptions options = new ShowOptions();
+        options.resultCallback = OnShowADResult;
+        Advertisement.Show(placementID, options);
+    }
+
+    void OnShowADResult(ShowResult result) {
         if (result == ShowResult.Finished) {
             Debug.Log("Video completed - Offer a reward to the player");
+            coins += Random.Range(5, 11);
+            coinsUI.text = "Coins: " + coins.ToString();
 
         } else if (result == ShowResult.Skipped) {
             Debug.LogWarning("Video was skipped - Do NOT reward the player");
